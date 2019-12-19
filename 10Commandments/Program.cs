@@ -7,6 +7,15 @@ namespace _10Commandments
     class Program
     {
         static string path;
+        static readonly ICommandment<IEnumerable<string>>[] documentCommandments = new ICommandment<IEnumerable<string>>[]
+        {
+            new Commandment1()
+        };
+        static readonly ICommandment<string>[] lineCommandments = new ICommandment<string>[]
+        {
+            new Commandment4()
+        };
+
 
         static void Main(string[] args)
         {
@@ -14,15 +23,35 @@ namespace _10Commandments
             if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
                 do Console.WriteLine("Please, specify a valid file path to check:"); while (string.IsNullOrWhiteSpace(path = Console.ReadLine()) || !File.Exists(path));
 
-            Commandment1 commandment1 = new Commandment1();
-            try
+            var lines = File.ReadAllLines(path);
+            foreach (var c in documentCommandments)
             {
-                commandment1.Validate(File.ReadAllLines(path));
+                try
+                {
+                    c.Validate(lines);
+                }
+                catch (CommandmentException e)
+                {
+                    Console.Error.WriteLine(e);
+                }
             }
-            catch (CommandmentException e)
+
+            foreach (var line in lines)
             {
-                Console.Error.WriteLine(e);
+                foreach (var c in lineCommandments)
+                {
+                    try
+                    {
+                        c.Validate(line);
+                    }
+                    catch (CommandmentException e)
+                    {
+                        Console.Error.WriteLine(e);
+                    }
+                }
             }
+
+            Console.ReadLine();
         }
     }
 
@@ -47,13 +76,21 @@ namespace _10Commandments
         }
     }
 
+    class Commandment4 : ICommandment<string>
+    {
+        public void Validate(string item)
+        {
+            if (item.Contains("\t")) throw new CommandmentException(null, 4, item);
+        }
+    }
+
     class CommandmentException : Exception
     {
-        public readonly int LineNumber;
+        public readonly int? LineNumber;
         public readonly int CommandmentNumber;
         public readonly string Line;
 
-        public CommandmentException(int lineNumber, int commandmentNumber, string line)
+        public CommandmentException(int? lineNumber, int commandmentNumber, string line)
         {
             LineNumber = lineNumber;
             CommandmentNumber = commandmentNumber;
@@ -62,7 +99,7 @@ namespace _10Commandments
 
         public override string ToString()
         {
-            return $"\nCommandment {CommandmentNumber} disrespected at line {LineNumber}:\n{Line}";
+            return $"\nCommandment {CommandmentNumber} disrespected" + (LineNumber != null ? $" at line {LineNumber}" : "") + $":\n{Line}";
         }
     }
 
