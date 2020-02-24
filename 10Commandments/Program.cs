@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace _10Commandments
 {
@@ -9,11 +10,14 @@ namespace _10Commandments
         static string path;
         static readonly ICommandment<IEnumerable<string>>[] documentCommandments = new ICommandment<IEnumerable<string>>[]
         {
-            new Commandment1()
+            new Commandment1(),
+            new Commandment10()
         };
         static readonly ICommandment<string>[] lineCommandments = new ICommandment<string>[]
         {
-            new Commandment4()
+            new Commandment4(),
+            new Commandment6(),
+            new Commandment7()
         };
 
 
@@ -51,6 +55,7 @@ namespace _10Commandments
                 }
             }
 
+            Console.WriteLine("\nDone");
             Console.ReadLine();
         }
     }
@@ -81,6 +86,38 @@ namespace _10Commandments
         public void Validate(string item)
         {
             if (item.Contains("\t")) throw new CommandmentException(null, 4, item);
+        }
+    }
+
+    class Commandment6 : ICommandment<string>
+    {
+        public void Validate(string item)
+        {
+            if (Regex.IsMatch(item, @"public (?:static final|final static) [a-zA-Z]* [A-Z0-9_]*[a-z]+"))
+                throw new CommandmentException(null, 6, item);
+        }
+    }
+
+    class Commandment7 : ICommandment<string>
+    {
+        public void Validate(string item)
+        {
+            if (item.Length > 120) throw new CommandmentException(null, 7, item);
+        }
+    }
+
+    class Commandment10 : ICommandment<IEnumerable<string>>
+    {
+        public void Validate(IEnumerable<string> items)
+        {
+            string all = "";
+
+            foreach (var item in items)
+                all += item;
+
+            if (Regex.IsMatch(all, @".*catch\s*\(.* ([a-zA-Z0-9_]*)\)\s*{\s*\n*\r*(\1.printStackTrace\(\);|return;)*\s*\n*\r*(\1.printStackTrace\(\);|return;)*\s*\n*\r*}"))
+                //TODO: display line number and line
+                throw new CommandmentException(null, 10, "[CANNOT DISPLAY LINE]");
         }
     }
 
