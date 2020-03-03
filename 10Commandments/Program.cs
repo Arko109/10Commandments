@@ -69,7 +69,7 @@ namespace _10Commandments
             foreach (var item in items)
             {
                 i++;
-                if (item.Contains("class ") && !item.Contains("\"") && !item.Contains("*"))
+                if (item.Contains("class ") && !item.Contains("\"") && !item.Contains("//") && !item.Contains("*"))
                 {
                     if (!(lastItem.Contains("//") || lastItem.Contains("*/")))
                     {
